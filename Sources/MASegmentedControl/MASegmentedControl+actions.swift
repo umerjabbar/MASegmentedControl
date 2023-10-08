@@ -72,8 +72,8 @@ extension MASegmentedControl {
     
     //Movement of thumbview if fillEqually = true
     func moveThumbView(at index: Int) {
-        
-        let selectedStartPosition = index == 0 ? self.padding : bounds.width / CGFloat(buttons.count) *  CGFloat(index) + self.padding
+        let isArabic = (UserDefaults.standard.object(forKey: "Lang") as? String ?? "EN") == "AR"
+        let selectedStartPosition = index == 0 ? (isArabic ? self.frame.width - self.padding : self.padding) : (bounds.width / CGFloat(buttons.count) *  CGFloat(index) + self.padding)
         UIView.animate(withDuration: TimeInterval(self.animationDuration), animations: {
             self.thumbView.frame.origin.x = selectedStartPosition
         })
