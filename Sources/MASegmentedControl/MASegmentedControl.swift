@@ -6,11 +6,9 @@
 //  Copyright © 2019 Alok Choudhary. All rights reserved.
 //
 
-
-import Foundation
 import UIKit
 
-@IBDesignable
+//@IBDesignable
 public class MASegmentedControl: UIControl {
     
     //static properties
@@ -43,17 +41,45 @@ public class MASegmentedControl: UIControl {
         }
     }
     
+    public var isArabic: Bool {
+        if #available(iOS 16, *) {
+            return Locale.current.language.languageCode?.identifier ?? "en" == "ar"
+        } else {
+            return Locale.current.languageCode ?? "en" == "ar"
+        }
+    }
+    
     //Public properties customize segmented control
     //change this public properties for customization
     
     //MARK: APPEREANCE
-    public var selectedSegmentIndex = 0
-    {
+    public lazy var selectedSegmentIndex: Int = {
+        0
+//        var isArabic = false
+//        if #available(iOS 16, *) {
+//            isArabic = Locale.current.language.languageCode?.identifier ?? "en" == "ar"
+//        } else {
+//            isArabic = Locale.current.languageCode ?? "en" == "ar"
+//        }
+//        if isArabic {
+//            return 1
+//        } else {
+//            return 0
+//        }
+    }() {
         didSet {
             self.setSelectedIndex(to: selectedSegmentIndex)
         }
     }
     
+    public lazy var previousSelectedIndex: Int = {
+        0
+//        if isArabic {
+//            return 1
+//        } else {
+//            return 0
+//        }
+    }()
     
     
     @IBInspectable public var padding: CGFloat = 0 {
@@ -209,14 +235,18 @@ public class MASegmentedControl: UIControl {
         self.buttonColors.removeAll()
         self.thumbView.alpha = 0
         
-        self.selectedSegmentIndex = 0
+//        if UserDefaults.standard.object(forKey: "Lang") as! String == "AR" {
+//            self.selectedSegmentIndex = 1
+//        } else {
+//            self.selectedSegmentIndex = 0
+//        }
         self.setSegmentedWith(items: items)
         
         UIView.animate(withDuration: 0.4) {
             self.updateView()
             self.thumbView.alpha = 1
         }
-        //if we want to update the view based on the new selectedSegmentedIndex
+//        if we want to update the view based on the new selectedSegmentedIndex
         self.performAction()
     }
     
@@ -250,16 +280,19 @@ public class MASegmentedControl: UIControl {
     override public func layoutSubviews() {
         super.layoutSubviews()
         
-        layer.cornerRadius = roundedControl ? frame.height / 2 : 1.0
-        self.backgroundColor = self.segmentedBackGroundColor
-        self.layer.borderWidth = self.customBorderWidth
-        self.layer.borderColor = self.customBorderColor.cgColor
-        
-        setThumbView()
-        //if fillEqually is not true the layout is not in stackview and its set based on frames
-        guard !fillEqually else { return }
-        for (index, btn) in self.buttons.enumerated() {
-            btn.frame = setFrameForButtonAt(index: index)
+        DispatchQueue.main.async {
+            
+            self.layer.cornerRadius = self.roundedControl ? self.frame.height / 2 : 1.0
+            self.backgroundColor = self.segmentedBackGroundColor
+            self.layer.borderWidth = self.customBorderWidth
+            self.layer.borderColor = self.customBorderColor.cgColor
+            
+            self.setThumbView()
+            //if fillEqually is not true the layout is not in stackview and its set based on frames
+            guard !self.fillEqually else { return }
+            for (index, btn) in self.buttons.enumerated() {
+                btn.frame = self.setFrameForButtonAt(index: index)
+            }
         }
     }
     
@@ -268,7 +301,7 @@ public class MASegmentedControl: UIControl {
         
         let thumbViewHeight = bottomLineThumbView ? MASegmentedControl.bottomLineThumbViewHeight : bounds.height - padding * 2
         let thumbViewWidth = fillEqually ? (bounds.width / CGFloat(buttons.count)) - padding * 2 : bounds.height - padding * 2
-        let thumbViewPositionX = padding
+        let thumbViewPositionX = isArabic ? (bounds.width - padding) : padding
         
         
         let thumbViewPositionY = bottomLineThumbView ? bounds.height - thumbViewHeight - padding : (bounds.height - thumbViewHeight) / 2
@@ -276,15 +309,8 @@ public class MASegmentedControl: UIControl {
         thumbView.frame = CGRect(x: thumbViewPositionX, y: thumbViewPositionY, width: thumbViewWidth, height: thumbViewHeight)
         thumbView.layer.cornerRadius = roundedControl ? thumbViewHeight / 2 : 1.0
         thumbView.backgroundColor = thumbViewColor
-        fillEqually ?  moveThumbView(at: selectedSegmentIndex) : moveThumbViewFillEquallyFalse(at: selectedSegmentIndex)
         
-        //        if NSLocale.preferredLanguages[0].contains("ar")
-        if UserDefaults.standard.object(forKey: "Lang") as! String == "AR"
-        {
-            print("Tabs ---- ar   \(NSLocale.preferredLanguages[0])")
-            fillEqually ?  moveThumbView(at: 1) : moveThumbViewFillEquallyFalse(at: 1)
-            
-        }
+        fillEqually ? moveThumbView(at: selectedSegmentIndex) : moveThumbViewFillEquallyFalse(at: selectedSegmentIndex)
     }
     
     //4 MARK: BUTTONS LAYOUTS

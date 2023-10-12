@@ -40,23 +40,17 @@ extension MASegmentedControl {
                 }
             }
             if btn == selectedBtn {
-                
-                
-                fillEqually ?  moveThumbView(at: btnIndex) : moveThumbViewFillEquallyFalse(at: btnIndex)
-                
                 //                if NSLocale.preferredLanguages[0].contains("ar")
-                if UserDefaults.standard.object(forKey: "Lang") as! String == "AR"
-                {
-                    print("Tabs ---- ar2   \(NSLocale.preferredLanguages[0])")
-                    
-                    if btnIndex == 0{
-                        fillEqually ?  moveThumbView(at: 1) : moveThumbViewFillEquallyFalse(at: 1)
-                    }else{
-                        fillEqually ?  moveThumbView(at: 0) : moveThumbViewFillEquallyFalse(at: 0)
-                    }
-                    
-                    
-                }
+//                if UserDefaults.standard.object(forKey: "Lang") as! String == "AR" {
+//                    print("Tabs ---- ar2   \(NSLocale.preferredLanguages[0])")
+//                    if btnIndex == 0 {
+//                        fillEqually ?  moveThumbView(at: 1) : moveThumbViewFillEquallyFalse(at: 1)
+//                    } else{
+//                        fillEqually ?  moveThumbView(at: 0) : moveThumbViewFillEquallyFalse(at: 0)
+//                    }
+//                } else {
+                fillEqually ?  moveThumbView(at: btnIndex) : moveThumbViewFillEquallyFalse(at: btnIndex)
+//                }
                 btn.setTitleColor(selectedTextColor, for: .normal)
                 if !itemsWithDynamicColor {
                     if !buttonsWithDynamicImages {
@@ -72,11 +66,25 @@ extension MASegmentedControl {
     
     //Movement of thumbview if fillEqually = true
     func moveThumbView(at index: Int) {
-        let isArabic = (UserDefaults.standard.object(forKey: "Lang") as? String ?? "EN") == "AR"
-        let selectedStartPosition = index == 0 ? (isArabic ? self.frame.width - self.padding : self.padding) : (bounds.width / CGFloat(buttons.count) *  CGFloat(index) + self.padding)
-        UIView.animate(withDuration: TimeInterval(self.animationDuration), animations: {
-            self.thumbView.frame.origin.x = selectedStartPosition
-        })
+        var selectedStartPosition: CGFloat = self.padding
+        if let buttonFrame = self.buttons.enumerated().first(where: { $0.offset == index })?.element.frame {
+            selectedStartPosition = buttonFrame.minX
+        }
+//        if isArabic {
+//            selectedStartPosition = index == 0 ? (bounds.width / CGFloat(buttons.count) *  CGFloat(index) + self.padding) : self.padding
+//        } else {
+//            selectedStartPosition = index == 0 ? self.padding : (bounds.width / CGFloat(buttons.count) *  CGFloat(index) + self.padding)
+//        }
+        if self.thumbView.frame.origin.x != selectedStartPosition {
+            if self.previousSelectedIndex == index {
+                self.thumbView.frame.origin.x = selectedStartPosition
+            } else {
+                UIView.animate(withDuration: TimeInterval(self.animationDuration), animations: {
+                    self.thumbView.frame.origin.x = selectedStartPosition
+                })
+            }
+            self.previousSelectedIndex = index
+        }
     }
     
     //Movement of thumbview if fillEqually = false
